@@ -1,0 +1,56 @@
+{
+    "name": "cybex/laravel-reflector",
+    "description": "Provides structural information about data Models.",
+    "keywords": [
+        "cybex",
+        "laravel",
+        "reflector",
+        "reflection"
+    ],
+    "homepage": "https://github.com/cybex-gmbh/laravel-reflector",
+    "license": "MIT",
+    "type": "library",
+    "support": {
+        "issues": "https://github.com/cybex-gmbh/laravel-reflector/issues",
+        "source": "https://github.com/cybex-gmbh/laravel-reflector"
+    },
+    "authors": [
+        {
+            "name": "Michael Müller",
+            "email": "webdevelopment@cybex-online.com",
+            "role": "Developer"
+        }
+    ],
+    "require": {
+        "illuminate/support": "^8.0",
+        "php": "^8.0"
+    },
+    "require-dev": {
+        "orchestra/testbench": "^6.0",
+        "phpunit/phpunit": "^8.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Cybex\\Reflector\\": "src"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Cybex\\Reflector\\Tests\\": "tests"
+        }
+    },
+    "scripts": {
+        "test": "vendor/bin/phpunit",
+        "test-coverage": "vendor/bin/phpunit --coverage-html coverage"
+    },
+    "config": {
+        "sort-packages": true
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Cybex\\Reflector\\ReflectorServiceProvider"
+            ]
+        }
+    }
+}
