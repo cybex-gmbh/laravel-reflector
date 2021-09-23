@@ -3,16 +3,15 @@
 namespace Cybex\Reflector;
 
 use Exception;
-use File;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\File;
+use Illuminate\Support\Str;
 use InvalidArgumentException;
 use ReflectionClass;
 use ReflectionMethod;
-use Route;
-use Str;
 
 class Reflector
 {
@@ -22,13 +21,6 @@ class Reflector
      * @var Collection
      */
     protected Collection $modelRelationsCache;
-
-    /**
-     * Used to cache available Routes by their according Aliases.
-     *
-     * @var Collection
-     */
-    protected Collection $routesByAliasCache;
 
     /**
      * Used to cache resolved Models by class and key during runtime.
@@ -51,25 +43,32 @@ class Reflector
      */
     protected Collection $modelStructureInformation;
 
-    /**
-     * Defines the Directory/Namespace which contains the Model Classes within the app-Directory.
-     *
-     * @var string|null
-     */
-    protected ?string $modelsDirectory = 'Models';
-
     public function __construct()
     {
         $this->modelRelationsCache       = collect();
-        $this->routesByAliasCache        = collect();
         $this->modelRepository           = collect();
         $this->filesystemModels          = collect();
         $this->modelStructureInformation = collect();
     }
 
+    /**
+     * Get the Namespace which contains the Model Classes within the app.
+     *
+     * @return string
+     */
     protected function getModelRootNamespace(): string
     {
-        return $this->modelsDirectory ? sprintf('App\\%s', $this->modelsDirectory) : 'App';
+        return $this->getModelsDirectory() ? sprintf('App\\%s', $this->getModelsDirectory()) : 'App';
+    }
+
+    /**
+     * Get the Directory which contains the Model Classes within the app-Directory.
+     *
+     * @return string|null
+     */
+    protected function getModelsDirectory(): ?string
+    {
+        return config('reflector.model.directory');
     }
 
     /**
@@ -102,18 +101,16 @@ class Reflector
                 $relation     = $modelInstance->{$methodName}();
                 $relatedModel = $relation->getRelated();
 
-                $relations->put(
-                    $methodName, [
-                        'relation'                => $methodName,
-                        'returnType'              => $reflectionMethod->getReturnType()->getName(),
-                        'relatedClass'            => get_class($relatedModel),
-                        'relatedModel'            => $relatedModel,
-                        'relatedTable'            => $relatedModel->getTable(),
-                        'foreignKeyName'          => $relation->getForeignKeyName(),
-                        'qualifiedForeignKeyName' => $relation->getQualifiedForeignKeyName(),
-                        'isRelationParent'        => sprintf('%s.%s', $modelInstance->getTable(), $relation->getForeignKeyName()) !== $relation->getQualifiedForeignKeyName(),
-                    ]
-                );
+                $relations->put($methodName, [
+                    'relation'                => $methodName,
+                    'returnType'              => $reflectionMethod->getReturnType()->getName(),
+                    'relatedClass'            => get_class($relatedModel),
+                    'relatedModel'            => $relatedModel,
+                    'relatedTable'            => $relatedModel->getTable(),
+                    'foreignKeyName'          => $relation->getForeignKeyName(),
+                    'qualifiedForeignKeyName' => $relation->getQualifiedForeignKeyName(),
+                    'isRelationParent'        => sprintf('%s.%s', $modelInstance->getTable(), $relation->getForeignKeyName()) !== $relation->getQualifiedForeignKeyName(),
+                ]);
             }
         }
 
@@ -138,9 +135,7 @@ class Reflector
         if (!$relation) {
             throw new Exception(
                 sprintf(
-                    'Relation to Target Model %s could not be found in the Model %s',
-                    is_string($target) ? $target : get_class($target),
-                    is_string($model) ? $model : get_class($model)
+                    'Relation to Target Model %s could not be found in the Model %s', is_string($target) ? $target : get_class($target), is_string($model) ? $model : get_class($model)
                 )
             );
         }
@@ -283,7 +278,7 @@ class Reflector
     }
 
     /**
-     * Resolves a related Model by the source and the given Relation. Currently we only support HasOne or BelongsTo-Relations, as those only return a single Model or null.
+     * Resolves a related Model by the source and the given Relation. Currently, we only support HasOne or BelongsTo-Relations, as those only return a single Model or null.
      *
      * @param Model  $model
      * @param string $relationName
@@ -325,22 +320,6 @@ class Reflector
     }
 
     /**
-     * Returns a Collection of all available Routes, keyed by their according Alias.
-     *
-     * @return Collection
-     */
-    public function getRoutesByAlias(): Collection
-    {
-        if ($this->routesByAliasCache->count()) {
-            return $this->routesByAliasCache;
-        }
-
-        $this->routesByAliasCache = collect(Route::getRoutes()->getRoutesByName());
-
-        return $this->routesByAliasCache;
-    }
-
-    /**
      * Get a Collection of all available Models via the Filesystem.
      *
      * @param bool $withoutAbstract if true, do not include abstract classes in the Collection.
@@ -358,15 +337,14 @@ class Reflector
         $modelRootNamespace = $this->getModelRootNamespace();
 
         $this->filesystemModels->put(
-            $abstractIdentifier,
-            collect(File::allFiles(app_path($this->modelsDirectory)))->map(
-                function ($item) use ($withoutAbstract, $modelRootNamespace) {
-                    $class = sprintf('%s\%s', $modelRootNamespace, implode('\\', explode('/', Str::beforeLast($item->getRelativePathname(), '.'))));
+            $abstractIdentifier, collect(File::allFiles(app_path($this->getModelsDirectory())))->map(function ($item) use ($withoutAbstract, $modelRootNamespace)
+            {
+                $class = sprintf('%s\%s', $modelRootNamespace, implode('\\', explode('/', Str::beforeLast($item->getRelativePathname(), '.'))));
 
-                    return class_exists($class) && is_subclass_of($class,
-                        Model::class) && ($withoutAbstract === false || (new ReflectionClass($class))->isAbstract() === false) ? $class : null;
-                }
-            )->filter()
+                return class_exists($class) && is_subclass_of(
+                    $class, Model::class
+                ) && ($withoutAbstract === false || (new ReflectionClass($class))->isAbstract() === false) ? $class : null;
+            })->filter()
         );
 
         return $this->filesystemModels->get($abstractIdentifier);
@@ -385,7 +363,7 @@ class Reflector
         $instantiatableModels = $this->getAllModels()->mapWithKeys(fn($class) => [$class => $class::getModel()]);
 
         if ($requiredTraits) {
-            $instantiatableModels = $instantiatableModels->filter(fn($model, $class) => ModelHelper::modelHasTraits($class, $requiredTraits));
+            $instantiatableModels = $instantiatableModels->filter(fn($model, $class) => $this->modelHasTraits($class, $requiredTraits));
         }
 
         return $instantiatableModels;
@@ -400,20 +378,18 @@ class Reflector
         $modelRootNamespace = $this->getModelRootNamespace();
 
         // Determine the Parent-Class based on the Namespace.
-        $parentStructureInformation = $this->getAllInstantiatableModels()->map(
-            function ($model, $class) use ($modelRootNamespace) {
+        $parentStructureInformation = $this->getAllInstantiatableModels()->map(function ($model, $class) use ($modelRootNamespace)
+            {
                 $supposedParentClass = (new ReflectionClass($class))->getNamespaceName();
 
                 return collect(['parentClass' => $supposedParentClass !== $modelRootNamespace && class_exists($supposedParentClass) ? $supposedParentClass : null]);
-            }
-        );
+            });
 
         // Determine the Child-Classes based on the previously determined parents.
-        $this->modelStructureInformation = $parentStructureInformation->map(
-            function ($structureInformation, $class) use ($parentStructureInformation) {
+        $this->modelStructureInformation = $parentStructureInformation->map(function ($structureInformation, $class) use ($parentStructureInformation)
+            {
                 return $structureInformation->put('childClasses', $parentStructureInformation->where('parentClass', $class)->keys()->all());
-            }
-        );
+            });
 
         return $this->modelStructureInformation;
     }
