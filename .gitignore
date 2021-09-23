@@ -1,1 +1,7 @@
 /.idea/*
+!/.idea/codeStyles
+npm-debug.log
+yarn-error.log
+.phpunit.result.cache
+composer.lock
+vendor
