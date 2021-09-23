@@ -13,7 +13,9 @@ class ReflectorServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-
+        if ($this->app->runningInConsole()) {
+            $this->publishConfig();
+        }
     }
 
     /**
@@ -23,7 +25,19 @@ class ReflectorServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
+        $this->mergeConfigFrom(__DIR__ . '/../config/reflector.php', 'reflector');
+
         $this->registerReflector();
+    }
+
+    /**
+     * Get the services provided by the provider.
+     *
+     * @return array
+     */
+    public function provides(): array
+    {
+        return ['Reflector'];
     }
 
     /**
@@ -37,5 +51,12 @@ class ReflectorServiceProvider extends ServiceProvider
         {
             return new Reflector();
         });
+    }
+
+    protected function publishConfig()
+    {
+        $this->publishes([
+            __DIR__ . '/../config/reflector.php' => config_path('reflector.php'),
+        ], 'reflector.config');
     }
 }
