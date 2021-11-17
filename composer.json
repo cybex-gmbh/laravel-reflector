@@ -34,11 +34,6 @@
             "Cybex\\Reflector\\": "src"
         }
     },
-    "autoload-dev": {
-        "psr-4": {
-            "Cybex\\Reflector\\Tests\\": "tests"
-        }
-    },
     "scripts": {
         "test": "vendor/bin/phpunit",
         "test-coverage": "vendor/bin/phpunit --coverage-html coverage"
@@ -49,7 +44,7 @@
     "extra": {
         "laravel": {
             "providers": [
-                "Cybex\\Reflector\\ReflectorServiceProvider"
+                "Cybex\\ModelReflector\\ModelReflectorServiceProvider"
             ]
         }
     }
