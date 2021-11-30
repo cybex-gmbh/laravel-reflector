@@ -68,7 +68,7 @@ class ModelReflector
      */
     protected function getModelsDirectory(): ?string
     {
-        return config('reflector.model.directory');
+        return config('modelReflector.model.directory');
     }
 
     /**
