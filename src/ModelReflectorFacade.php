@@ -1,10 +1,10 @@
 <?php
 
-namespace Cybex\Reflector;
+namespace Cybex\ModelReflector;
 
 use Illuminate\Support\Facades\Facade;
 
-class ReflectorFacade extends Facade
+class ModelReflectorFacade extends Facade
 {
     /**
      * Get the registered name of the component.
@@ -13,6 +13,6 @@ class ReflectorFacade extends Facade
      */
     protected static function getFacadeAccessor(): string
     {
-        return 'Reflector';
+        return 'ModelReflector';
     }
 }

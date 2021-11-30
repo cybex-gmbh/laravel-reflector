@@ -31,12 +31,7 @@
     },
     "autoload": {
         "psr-4": {
-            "Cybex\\Reflector\\": "src"
-        }
-    },
-    "autoload-dev": {
-        "psr-4": {
-            "Cybex\\Reflector\\Tests\\": "tests"
+            "Cybex\\ModelReflector\\": "src"
         }
     },
     "scripts": {
@@ -49,8 +44,11 @@
     "extra": {
         "laravel": {
             "providers": [
-                "Cybex\\Reflector\\ReflectorServiceProvider"
-            ]
+                "Cybex\\ModelReflector\\ModelReflectorServiceProvider"
+            ],
+            "aliases": {
+                "ModelReflector": "Cybex\\ModelReflector\\ModelReflectorFacade"
+            }
         }
     }
 }
