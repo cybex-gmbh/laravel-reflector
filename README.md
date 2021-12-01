@@ -21,8 +21,8 @@ composer require cybex/laravel-reflector
 
 ### getModelRelations()
 
-The ```getModelRelations()``` method returns a Collection of all relations of a Model, with additional information like the name of the relation, relation type, related class and a
-empty base instance of the given Model from Eloquent.
+The ```getModelRelations()``` method returns a Collection of all relations of a Model, with additional information like the name of the relation, relation type, related class and 
+an empty base instance of the given Model from Eloquent.
 
 ```
 ModelReflector::getModelRelations(User::class);
