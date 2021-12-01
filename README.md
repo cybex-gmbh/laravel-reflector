@@ -31,14 +31,14 @@ ModelReflector::getModelRelations(User::class);
 
 Illuminate\Support\Collection {#5236
     all: [
-        "ManagedUser" => [
-             "relation" => "ManagedUser",
-             "returnType" => "Illuminate\Database\Eloquent\Relations\HasOne",
-             "relatedClass" => "App\Models\ManagedUser",
-             "relatedModel" => App\Models\ManagedUser {#5237},
-             "relatedTable" => "users",
+        "Images" => [
+             "relation" => "Images",
+             "returnType" => "Illuminate\Database\Eloquent\Relations\HasMany",
+             "relatedClass" => "App\Models\Image",
+             "relatedModel" => App\Models\Image {#5237},
+             "relatedTable" => "images",
              "foreignKeyName" => "id",
-             "qualifiedForeignKeyName" => "users.id",
+             "qualifiedForeignKeyName" => "images.id",
              "isRelationParent" => false,
          ]
     ]
@@ -51,13 +51,13 @@ The ```getRelationByTarget()``` method returns the name of a Relation between th
 
 ```
 $user = new User;
-$managedUser = new ManagedUser;
+$image = new Image;
 
-ModelReflector::getRelationByTarget($user, $managedUser);
+ModelReflector::getRelationByTarget($user, $image);
 
 // Returns 
 
-'ManagedUser'
+'Images'
 ```
 
 ### hasRelation()
@@ -65,7 +65,7 @@ ModelReflector::getRelationByTarget($user, $managedUser);
 The ```hasRelation()``` method returns true if a Model has a specific relation.
 
 ```
-ModelReflector::hasRelation(User::class, 'ManagedUser');
+ModelReflector::hasRelation(User::class, 'Images');
 
 // Returns
 
@@ -80,11 +80,11 @@ no return type is type hinted.
 ```
 $user = new User;
 
-ModelReflector::getMethodReturnType($user, 'ManagedUser');
+ModelReflector::getMethodReturnType($user, 'Images');
 
 // Returns 
 
-'Illuminate\Database\Eloquent\Relations\HasOne'
+'Illuminate\Database\Eloquent\Relations\HasMany'
 
 ```
 
@@ -96,9 +96,7 @@ base Model of the given class.
 ```
 ModelReflector::getModelInstance('App\Models\User');
 
-// Returns 
-
-App\Models\User {#5246}
+// Returns an empty object of the User class
 ```
 
 ### getModelClass()
@@ -120,9 +118,9 @@ The ```resolveModelObject()``` method resolves a Model based on a given Model or
 If the desired Model can not be found, it will return null.
 
 ```
-ModelReflector::resolveModelObject(ManagedUser::class, 10);
+ModelReflector::resolveModelObject(Image::class, 10);
 
-// Returns the ManagedUser object with the key 10
+// Returns the Image object with the key 10
 ```
 
 ### resolveRelatedModel()
@@ -131,10 +129,9 @@ The ```resolveRelatedModel()``` method resolves a related Model by the source an
 a single Model or null.
 
 ```
-ModelReflector::resolveRelatedModel($user, 'Role');
+ModelReflector::resolveRelatedModel($image, 'User');
 
-// Returns the Role object that the User object belongs to
-
+// Returns the User object that the Image object belongs to
 ```
 
 ### resolveRelatedModelByTarget()
@@ -142,10 +139,9 @@ ModelReflector::resolveRelatedModel($user, 'Role');
 The ```resolveRelatedModelByTarget()``` method resolves a related Model by the source and the given TargetModel.
 
 ```
-ModelReflector::resolveRelatedModelByTarget($user, Role::class);
+ModelReflector::resolveRelatedModelByTarget($image, User::class);
 
-
-// Returns the Role object that the User object belongs to 
+// Returns the User object that the Image object belongs to 
 ```
 
 ### getModelShortName()
@@ -153,13 +149,13 @@ ModelReflector::resolveRelatedModelByTarget($user, Role::class);
 The ```getModelShortName()``` method returns the Short-Name of a Model.
 
 ```
-$user = new User;
+$image = new Image;
 
-ModelReflector::getModelShortName($user);
+ModelReflector::getModelShortName($image);
 
 // Returns
 
-'User'
+'Image'
 ```
 
 ### getAllModels()
@@ -173,8 +169,7 @@ ModelReflector::getAllModels();
 
 Illuminate\Support\Collection {#384
     all: [
-    "App\Models\ManagedUser",
-    "App\Models\Role",
+    "App\Models\User\Image",
     "App\Models\User",
     ],
 }
@@ -188,12 +183,11 @@ the according Short-Name as value.
 ```
 ModelReflector::getAllInstantiatableModels();
 
-// Returns
+// Returns all kinds of empty objects
 
 Illuminate\Support\Collection {#4929
     all: [
-    "App\Models\ManagedUser" => App\Models\ManagedUser {#4925},
-    "App\Models\Role" => App\Models\Role {#4928},
+    "App\Models\User\Image" => App\Models\User\Image {#4928},
     "App\Models\User" => App\Models\User {#4921},
     ],
 }
@@ -211,22 +205,18 @@ ModelReflector::getInstantiatableModelStructureInformation();
 
 Illuminate\Support\Collection {#1469
     all: [
-        "App\Models\Country" => Illuminate\Support\Collection {#1482
+        "App\Models\User" => Illuminate\Support\Collection {#1482
             all: [
                 "parentClass" => null,
                 "childClasses" => [
-                 "App\Models\Country\Retailer",
+                 "App\Models\User\Image",
                 ],
             ],
         },
-        "App\Models\Country\Retailer" => Illuminate\Support\Collection {#1483
+        "App\Models\User\Image" => Illuminate\Support\Collection {#1483
             all: [
-                "parentClass" => "App\Models\Country",
-                "childClasses" => [
-                 "App\Models\Country\Retailer\DefaultPublishedStore",
-                 "App\Models\Country\Retailer\PublishedOnlineShop",
-                 "App\Models\Country\Retailer\Store",
-                ],
+                "parentClass" => "App\Models\User",
+                "childClasses" => [],
             ],
         }
     ],
@@ -238,11 +228,11 @@ Illuminate\Support\Collection {#1469
 The ```getClassFromMorphMap()``` method returns the class name from the Morph-Map alias (reverse lookup), the alias or null (if strict is true).
 
 ```
-ModelReflector::getClassFromMorphMap('roles');
+ModelReflector::getClassFromMorphMap('user');
 
 // Returns
 
-'App\Models\Role'
+'App\Models\User'
 ```
 
 ### getMorphAliasForClass()
@@ -250,11 +240,11 @@ ModelReflector::getClassFromMorphMap('roles');
 The ```getMorphAliasForClass()``` method returns the morph alias for the specified Model.
 
 ```
-ModelReflector::getMorphAliasForClass('App\Models\Role');
+ModelReflector::getMorphAliasForClass('App\Models\User');
 
 // Returns
 
-'roles'
+'user'
 ```
 
 ### modelHasTraits()
