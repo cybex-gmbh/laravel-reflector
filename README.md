@@ -105,6 +105,7 @@ The ```getModelClass()``` method checks if the given model is an instance of a M
 
 ```
 $user = new User;
+
 ModelReflector::getModelClass($user);
 
 // Returns
