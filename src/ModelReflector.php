@@ -97,23 +97,26 @@ class ModelReflector
 
         foreach ($reflectionMethods as $reflectionMethod) {
             if ($this->reflectionMethodIsRelation($reflectionMethod)) {
-                $methodName   = $reflectionMethod->getName();
-                $relation     = $modelInstance->{$methodName}();
-                $relatedModel = $relation->getRelated();
-
-                $getForeignKeyNameMethodExists = method_exists($relation, 'getForeignKeyName');
-                $getQualifiedForeignKeyNameMethodExists = method_exists($relation, 'getQualifiedForeignKeyName');
-
+                $methodName                    = $reflectionMethod->getName();
+                $relation                      = $modelInstance->{$methodName}();
+                $relatedModel                  = $relation->getRelated();
                 $relations->put($methodName, [
                     'relation'                => $methodName,
                     'returnType'              => $reflectionMethod->getReturnType()->getName(),
-                    'relatedClass'            => get_class($relatedModel),
-                    'relatedModel'            => $relatedModel,
-                    'relatedTable'            => $relatedModel->getTable(),
-                    'foreignKeyName'          => $getForeignKeyNameMethodExists ? $relation->getForeignKeyName() : null,
-                    'qualifiedForeignKeyName' => $getQualifiedForeignKeyNameMethodExists ? $relation->getQualifiedForeignKeyName() : null,
-                    'isRelationParent'        => $getForeignKeyNameMethodExists && $getQualifiedForeignKeyNameMethodExists ? sprintf('%s.%s', $modelInstance->getTable(), $relation->getForeignKeyName()) !== $relation->getQualifiedForeignKeyName() : null,
                 ]);
+
+                // Not available for some polymorph relations.
+                if (method_exists($relation, 'getForeignKeyName')) {
+                    $relations->put($methodName, [
+                        ...$relations->get($methodName),
+                        'relatedClass'            => get_class($relatedModel),
+                        'relatedModel'            => $relatedModel,
+                        'relatedTable'            => $relatedModel->getTable(),
+                        'foreignKeyName'          => $relation->getForeignKeyName(),
+                        'qualifiedForeignKeyName' => $relation->getQualifiedForeignKeyName(),
+                        'isRelationParent'        => sprintf('%s.%s', $modelInstance->getTable(), $relation->getForeignKeyName()) !== $relation->getQualifiedForeignKeyName(),
+                    ]);
+                }
             }
         }
 
