@@ -97,12 +97,12 @@ class ModelReflector
 
         foreach ($reflectionMethods as $reflectionMethod) {
             if ($this->reflectionMethodIsRelation($reflectionMethod)) {
-                $methodName                    = $reflectionMethod->getName();
-                $relation                      = $modelInstance->{$methodName}();
-                $relatedModel                  = $relation->getRelated();
+                $methodName   = $reflectionMethod->getName();
+                $relation     = $modelInstance->{$methodName}();
+                $relatedModel = $relation->getRelated();
                 $relations->put($methodName, [
-                    'relation'                => $methodName,
-                    'returnType'              => $reflectionMethod->getReturnType()->getName(),
+                    'relation'   => $methodName,
+                    'returnType' => $reflectionMethod->getReturnType()->getName(),
                 ]);
 
                 // Not available for some polymorph relations.
