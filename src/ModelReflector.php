@@ -100,17 +100,23 @@ class ModelReflector
                 $methodName   = $reflectionMethod->getName();
                 $relation     = $modelInstance->{$methodName}();
                 $relatedModel = $relation->getRelated();
-
                 $relations->put($methodName, [
-                    'relation'                => $methodName,
-                    'returnType'              => $reflectionMethod->getReturnType()->getName(),
-                    'relatedClass'            => get_class($relatedModel),
-                    'relatedModel'            => $relatedModel,
-                    'relatedTable'            => $relatedModel->getTable(),
-                    'foreignKeyName'          => $relation->getForeignKeyName(),
-                    'qualifiedForeignKeyName' => $relation->getQualifiedForeignKeyName(),
-                    'isRelationParent'        => sprintf('%s.%s', $modelInstance->getTable(), $relation->getForeignKeyName()) !== $relation->getQualifiedForeignKeyName(),
+                    'relation'   => $methodName,
+                    'returnType' => $reflectionMethod->getReturnType()->getName(),
                 ]);
+
+                // Not available for some polymorph relations.
+                if (method_exists($relation, 'getForeignKeyName')) {
+                    $relations->put($methodName, [
+                        ...$relations->get($methodName),
+                        'relatedClass'            => get_class($relatedModel),
+                        'relatedModel'            => $relatedModel,
+                        'relatedTable'            => $relatedModel->getTable(),
+                        'foreignKeyName'          => $relation->getForeignKeyName(),
+                        'qualifiedForeignKeyName' => $relation->getQualifiedForeignKeyName(),
+                        'isRelationParent'        => sprintf('%s.%s', $modelInstance->getTable(), $relation->getForeignKeyName()) !== $relation->getQualifiedForeignKeyName(),
+                    ]);
+                }
             }
         }
 
